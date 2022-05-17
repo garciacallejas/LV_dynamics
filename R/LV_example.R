@@ -1,5 +1,6 @@
 
 library(tidyverse)
+library(deSolve)
 
 # -------------------------------------------------------------------------
 # functions for solving Lotka-Volterra systems
@@ -7,6 +8,7 @@ source("R/GLV_functions.R")
 
 # -------------------------------------------------------------------------
 # exponential growth
+
 r <- c(-0.03, -0.02, 0, 0.02, 0.03)
 N0 <- 2
 time <- seq(1,100,1)
@@ -23,6 +25,8 @@ ggplot(cont.long,aes(x = timestep, y = density, group = growth_rate)) +
   NULL
 
 # -------------------------------------------------------------------------
+# logistic growth
+
 logistic_growth <- function(times, y, parms) {
   n <- y[1]
   r <- parms[1]
@@ -31,7 +35,7 @@ logistic_growth <- function(times, y, parms) {
   return(list(c(dN.dt)))
 }
 
-library(deSolve)
+
 prms <- c(r = 1, K = 100)
 init.N <- c(1)
 t.s <- seq(0.1, 50, by = 0.01)
