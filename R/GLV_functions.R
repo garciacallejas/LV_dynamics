@@ -1,5 +1,5 @@
 # adapted from https://stefanoallesina.github.io/Sao_Paulo_School/multi.html#how-many-species-will-coexist
-# and my own SME repo
+
 
 library(tidyverse)
 library(deSolve)
@@ -68,6 +68,20 @@ build_LDstable <- function(n){
     return(A)
 }
 
+plot_eigenvalues <- function(M, prediction = NULL){
+  eig <- eigen(M, only.values = TRUE)$values
+  dt <- tibble(Real = Re(eig), Imaginary = Im(eig))
+  pl <- ggplot(dt) + aes(x = Real, y = Imaginary) + 
+    geom_point() + 
+    coord_equal() + 
+    geom_vline(xintercept = 0, colour = "red", linetype = 2)
+  if (is.null(prediction) == FALSE) {
+    pl <- pl + geom_vline(xintercept = prediction, colour = "black", linetype = 2)
+  }
+  show(pl)
+}
+
+
 # builds an interaction matrix with different parameters
 # S = richness
 # c = connectance
@@ -127,5 +141,39 @@ horizontal_community_matrix <- function(S = 5,
     return(A)
 }
 
-
+#' Niche Model Food Web
+#'
+#' @param S Number of species in the community.
+#' @param C The connectance, or fraction of realized links in the food web.
+#'
+#' @return An adjacency matrix for a niche model food web.
+#' @export
+#'
+#' @section Reference:
+#' Williams, R. J., and N. D. Martinez. 2000. Simple rules yield complex food webs. Nature 404:180–183.
+#'
+#' @examples
+#' niche(20, .1)
+niche <- function(S, C){
+  cond <- FALSE
+  while(!cond){
+    n.i <- sort(runif(S), decreasing = F)
+    r.i <- rbeta(S,1,((1/(2*C))-1))*n.i
+    c.i <- runif(S, r.i/2, n.i)
+    
+    a <- matrix(0, nrow = S, ncol = S)
+    
+    for(i in 2:S){
+      for(j in 1:S){
+        if(n.i[j] > (c.i[i] - (.5 * r.i[i])) & n.i[j] < (c.i[i] + .5 * r.i[i])){
+          a[j, i] <- 1
+        }
+      }
+    }
+    
+    cond <- igraph::is.connected(igraph::graph.adjacency(a))
+  }
+  
+  return(a)
+}
 
