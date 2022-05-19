@@ -53,6 +53,51 @@ integrate_GLV <- function(r, A, x0, maxtime = 100, steptime = 0.5,positive.compe
     return(out2)
 }
 
+jacobian_matrix_GLV <- function(r, A, x0, maxtime = 100, steptime = 0.5,positive.competition = FALSE){
+  times <- seq(0, maxtime, by = steptime)
+  parameters <- list(r = r, A = A)
+  # solve numerically
+  
+  model_stode_pos_comp = function(t,y,parms=NULL,A,growth.rate) {
+    dy = y*(growth.rate-A%*%y)
+    return(list(dy,1))
+  }
+  model_stode_neg_comp = function(t,y,parms=NULL,A,growth.rate) {
+    dy = y*(growth.rate+A%*%y)
+    return(list(dy,1))
+  }
+  
+
+  
+  if(positive.competition){
+    out <- rootSolve::stode(y = x0,
+                            time=0,
+                            func=model_stode_pos_comp,
+                            parms=NULL,
+                            A=A, 
+                            growth.rate=r,
+                            positive = TRUE)[[1]]
+    # out <- ode(y = x0, times = times, 
+    #            func = GLV.positive.competition, 
+    #            parms = parameters, 
+    #            method = "ode45")
+  }else{
+    out <- rootSolve::stode(y = x0,
+                            time=0,
+                            func=model_stode_neg_comp,
+                            parms=NULL,
+                            A=A, 
+                            growth.rate=r,
+                            positive = TRUE)[[1]]
+  }
+  model_J = function(t,y,parms=NULL,A,r) {
+    dy = y*(r+A%*%y) 
+    return(as.list(dy))
+  }
+  jac.matrix <- jacobian.full(y = out,func = model_J,A = A, r = r)
+  return(jac.matrix)
+}
+
 # from Allesina, builds a globally stable matrix
 build_LDstable <- function(n){
     A <- matrix(0, n, n)

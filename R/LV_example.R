@@ -1,6 +1,7 @@
 
 library(tidyverse)
 library(deSolve)
+library(rootSolve) # for the jacobian matrix
 
 # -------------------------------------------------------------------------
 # functions for solving Lotka-Volterra systems
@@ -97,10 +98,14 @@ A_2 <- -matrix(c(10, 7, 12,
 print(solve(A_2, -r_2)) # feasible
 x0_2 <- runif(3)
 res_2 <- integrate_GLV(r_2, A_2, x0_2)
+jacobian_matrix_2 <- jacobian_matrix_GLV(r = r_2, A = A_2, x0 = x0_2)
+# jacobian_matrix_2
+largest.eigenvalue <- max(as.double(eigen(jacobian_matrix_2)$values))	
+plot_eigenvalues(jacobian_matrix_2)
 lv2 <- ggplot(data = res_2) +
   aes(x = time, y = density, colour = species) + #ylim(0,1e5) +
   geom_line()
-plot_eigenvalues(A_2)
+
 
 # -------------------------------------------------------------------------
 # stable limit cycles
@@ -114,10 +119,14 @@ A_3 <- -matrix(c(10, 6, 12,
 print(solve(A_3, -r_3)) # feasible
 x0_3 <- 0.1 * runif(3)
 res_3 <- integrate_GLV(r_3, A_3, x0_3, maxtime = 250)
+jacobian_matrix_3 <- jacobian_matrix_GLV(r = r_3, A = A_3, x0 = x0_3)
+# jacobian_matrix_3
+largest.eigenvalue <- max(as.double(eigen(jacobian_matrix_3)$values))	
+plot_eigenvalues(jacobian_matrix_3)
+
 lv3 <- ggplot(data = res_3) +
   aes(x = time, y = density, colour = species) + #ylim(0,1e5) +
   geom_line()
-plot_eigenvalues(A_3)
 
 # -------------------------------------------------------------------------
 # chaos
@@ -132,10 +141,14 @@ A_4 <- -matrix(c(1, 1.09, 1.52, 0,
 print(solve(A_4, -r_4)) # feasible
 x0_4 <- 0.1 * runif(4)
 res_4 <- integrate_GLV(r_4, A_4, x0_4, maxtime = 500)
+jacobian_matrix_4 <- jacobian_matrix_GLV(r = r_4, A = A_4, x0 = x0_4)
+# jacobian_matrix_4
+largest.eigenvalue <- max(as.double(eigen(jacobian_matrix_4)$values))	
+plot_eigenvalues(jacobian_matrix_4)
+
 lv4 <- ggplot(data = res_4) +
   aes(x = time, y = density, colour = species) + #ylim(0,1e5) +
   geom_line()
-plot_eigenvalues(A_4)
 
 # -------------------------------------------------------------------------
 # a slightly more ecologically realistic interaction matrix
